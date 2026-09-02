@@ -102,7 +102,7 @@ function ChatInput() {
     const data = await sendMessage(formData)
     dispatch(setIsLoading(false))
     setSelectedFile(null)
-    dispatch(setArtifacts(data.artifacts || []))
+    dispatch(setArtifacts(data?.artifacts || []))
     dispatch(addMessage({ role: "assistant", content: data?.answer, images: data?.images }))
     console.log(data)
   }
