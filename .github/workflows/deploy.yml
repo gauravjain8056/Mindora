@@ -1,0 +1,110 @@
+name: Mindora AI Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_CONTAINER_REGISTRY: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.AZURE_CONTAINER_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push Gateway
+        run: |
+          docker build -f backend/gateway/Dockerfile -t ${{ env.AZURE_CONTAINER_REGISTRY }}/gateway:latest backend
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/gateway:latest
+
+      - name: Build and Push Auth Service
+        run: |
+          docker build -f backend/services/auth/Dockerfile -t ${{ env.AZURE_CONTAINER_REGISTRY }}/auth-service:latest backend
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/auth-service:latest
+
+      - name: Build and Push Chat Service
+        run: |
+          docker build -f backend/services/chat/Dockerfile -t ${{ env.AZURE_CONTAINER_REGISTRY }}/chat-service:latest backend
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/chat-service:latest
+
+      - name: Build and Push Agent Service
+        run: |
+          docker build -f backend/services/agent/Dockerfile -t ${{ env.AZURE_CONTAINER_REGISTRY }}/agent-service:latest backend
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/agent-service:latest
+
+      - name: Build and Push Billing Service
+        run: |
+          docker build -f backend/services/billing/Dockerfile -t ${{ env.AZURE_CONTAINER_REGISTRY }}/billing-service:latest backend
+          docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/billing-service:latest
+
+      - name: Deploy Gateway Container App
+        run: |
+          az containerapp update \
+            --name gateway \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/gateway:latest
+
+      - name: Deploy Auth Service Container App
+        run: |
+          az containerapp update \
+            --name auth-service \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/auth-service:latest
+
+      - name: Deploy Chat Service Container App
+        run: |
+          az containerapp update \
+            --name chat-service \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/chat-service:latest
+
+      - name: Deploy Agent Service Container App
+        run: |
+          az containerapp update \
+            --name agent-service \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/agent-service:latest
+
+      - name: Deploy Billing Service Container App
+        run: |
+          az containerapp update \
+            --name billing-service \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/billing-service:latest
+
+  deploy-frontend:
+    needs: deploy-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_CLIFF_02CC5CE00 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/frontend"
+          output_location: "dist"
+          app_build_command: "npm run build"
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
+          VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
