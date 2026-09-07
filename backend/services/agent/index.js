@@ -8,7 +8,8 @@ const port = process.env.PORT || 8003
 
 const app=express()
 
-app.use(express.json())
+app.use(express.json({ limit: "10mb" }))
+app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 app.use("/",router)
 
 app.use((err,req,res,next)=>{
