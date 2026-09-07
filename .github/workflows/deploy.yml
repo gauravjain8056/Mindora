@@ -58,35 +58,40 @@ jobs:
           az containerapp update \
             --name gateway \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/gateway:latest
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/gateway:latest \
+            --revision-suffix run-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Deploy Auth Service Container App
         run: |
           az containerapp update \
             --name auth-service \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/auth-service:latest
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/auth-service:latest \
+            --revision-suffix run-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Deploy Chat Service Container App
         run: |
           az containerapp update \
             --name chat-service \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/chat-service:latest
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/chat-service:latest \
+            --revision-suffix run-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Deploy Agent Service Container App
         run: |
           az containerapp update \
             --name agent-service \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/agent-service:latest
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/agent-service:latest \
+            --revision-suffix run-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Deploy Billing Service Container App
         run: |
           az containerapp update \
             --name billing-service \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/billing-service:latest
+            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/billing-service:latest \
+            --revision-suffix run-${{ github.run_number }}-${{ github.run_attempt }}
 
   deploy-frontend:
     needs: deploy-backend
