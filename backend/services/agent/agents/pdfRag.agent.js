@@ -1,5 +1,5 @@
 import fs from "fs/promises"
-import pdfParse from "pdf-parse"
+import { PDFParse } from "pdf-parse"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { vectorStore } from "../config/vectorDb.js"
 import { getModel } from "../config/llmModels.js"
@@ -7,10 +7,21 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { deductCredits } from "../utils/deductCredits.js"
 import { checkAgentLimit } from "../config/agentLimit.js"
 export const pdfRag=async (state)=>{
+   let store;
+   let collectionName;
    try {
     await checkAgentLimit(state.userId,"pdf")
       const buffer=await fs.readFile(state.file.path)
-      const { text } = await pdfParse(buffer)
+      const parser = new PDFParse({ data: buffer })
+      const { text } = await parser.getText()
+      await parser.destroy()
+
+      if (!text || !text.trim()) {
+        return {
+          ...state,
+          aiResponse: "The uploaded PDF does not contain extractable text (it may be a scanned image or empty)."
+        }
+      }
 
       const spilliter=new RecursiveCharacterTextSplitter({
         chunkSize:1000,
@@ -18,10 +29,11 @@ export const pdfRag=async (state)=>{
       })
 
       const docs=await spilliter.createDocuments([text])
-      const collectionName=`pdf-${Date.now()}`;
-      const store=await vectorStore(docs,collectionName)
+      collectionName=`pdf-${Date.now()}`;
+      store=await vectorStore(docs,collectionName)
 
-      const relevantDocs=await store.similaritySearch(state.prompt,5)
+      const query = state.prompt?.trim() || "Summarize this document and its key points"
+      const relevantDocs=await store.similaritySearch(query,5)
       
       const context=relevantDocs.map(d=>d.pageContent).join("\n\n")
       
@@ -45,7 +57,7 @@ Rules:
 
 new HumanMessage(`
     Context:${context}
-     Question:${state.prompt}
+     Question:${query}
     `)
        ]
 
@@ -68,6 +80,9 @@ new HumanMessage(`
         }
    }finally{
          await fs.unlink(state.file.path).catch(()=>{})
+         if (store && collectionName) {
+           await store.client.deleteCollection(collectionName).catch(()=>{})
+         }
    }
 
 
