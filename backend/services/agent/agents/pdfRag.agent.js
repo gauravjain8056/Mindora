@@ -74,10 +74,11 @@ new HumanMessage(`
 
    } catch (error) {
     console.error(error)
-         return {
-            ...state,
-            aiResponse:error?.data?.message || error?.message || "failed to analyze pdf"
-        }
+    const errorDetails = error?.cause?.message ? `${error.message} (${error.cause.message})` : error?.message
+    return {
+       ...state,
+       aiResponse: error?.data?.message || errorDetails || "failed to analyze pdf"
+    }
    }finally{
          await fs.unlink(state.file.path).catch(()=>{})
          if (store && collectionName) {
