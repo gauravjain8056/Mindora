@@ -38,12 +38,15 @@ const prompt=res.content.trim()
 
 const imageUrl=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`
 
-const imageRes=await axios.get(imageUrl,{responseType:"arraybuffer"})
+const imageRes=await axios.get(imageUrl,{responseType:"stream"})
 await deductCredits(state.userId,"vision")
-const buffer=Buffer.from(imageRes.data)
 const filename=`image-${Date.now()}.png`
 
-await uploadToBlob(filename,buffer,"image/png")
+const containerClient = (await import("../config/blobStorage.js")).containerClient
+const blockBlobClient = containerClient.getBlockBlobClient(filename)
+await blockBlobClient.uploadStream(imageRes.data, undefined, undefined, {
+    blobHTTPHeaders: { blobContentType: "image/png" }
+})
 const downloadUrl=await getBlobUrl(filename,24*60)
 
 return {

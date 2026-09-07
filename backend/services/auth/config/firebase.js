@@ -13,12 +13,24 @@ let serviceAccount;
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   try {
-    serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT_JSON === "string"
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)
-      : process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
+    if (raw.startsWith("{")) {
+      serviceAccount = JSON.parse(raw);
+    } else {
+      const decoded = Buffer.from(raw, "base64").toString("utf-8");
+      serviceAccount = JSON.parse(decoded);
+    }
   } catch (error) {
     console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:", error.message);
   }
+}
+
+if (!serviceAccount && process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
+  serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+  };
 }
 
 if (!serviceAccount) {
@@ -34,7 +46,5 @@ if (!serviceAccount) {
 }
 
 export const app = getApps().length === 0
-  ? initializeApp({
-      credential: cert(serviceAccount)
-    })
-  : getApps()[0];
+  ? (serviceAccount ? initializeApp({ credential: cert(serviceAccount) }) : initializeApp())
+  : getApps()[0];

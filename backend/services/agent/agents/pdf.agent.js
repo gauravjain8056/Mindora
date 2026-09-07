@@ -3,6 +3,11 @@ import { generatePdf } from "../utils/generatePdf.js"
 import { uploadToBlob, getBlobUrl } from "../utils/blobStorage.js"
 import { deductCredits } from "../utils/deductCredits.js"
 import { checkAgentLimit } from "../config/agentLimit.js"
+
+const parseAsync = (str) => new Promise((resolve, reject) =>
+    setImmediate(() => { try { resolve(JSON.parse(str)) } catch(e) { reject(e) } })
+)
+
 export const pdfAgent=async (state) => {
     try {
         const rate=await checkAgentLimit(state.userId,"pdf")
@@ -41,7 +46,7 @@ ${state.prompt}
         `
 
         const res=await llm.invoke(prompt)
-        const data=JSON.parse(res.content)
+        const data=await parseAsync(res.content)
        await deductCredits(state.userId,"pdf")
         
         const pdfBuffer=await generatePdf(data)

@@ -2,6 +2,10 @@ import { checkAgentLimit } from "../config/agentLimit.js"
 import { getModel } from "../config/llmModels.js"
 import { deductCredits } from "../utils/deductCredits.js"
 
+const parseAsync = (str) => new Promise((resolve, reject) =>
+    setImmediate(() => { try { resolve(JSON.parse(str)) } catch(e) { reject(e) } })
+)
+
 export const codingAgent=async (state) => {
 try {
    await checkAgentLimit(state.userId,"coding")
@@ -91,7 +95,7 @@ ${state.prompt}
         ` 
         const res=await llm.invoke(prompt)
         console.log(res)
-        const data=JSON.parse(res.content)
+        const data=await parseAsync(res.content)
         await deductCredits(state.userId,"coding")
         
         return {

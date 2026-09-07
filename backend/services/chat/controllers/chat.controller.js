@@ -18,10 +18,9 @@ export const createConversation=async (req,res) => {
 export const getConversations=async (req,res) => {
   try {
     const userId=req.headers["x-user-id"]
-    console.log("userId",userId)
     const conversations=await Conversation.find({
         userId:userId
-    }).sort({updatedAt:-1})
+    }).sort({updatedAt:-1}).limit(50).lean()
 
     return res.status(200).json(conversations)
   } catch (error) {
@@ -60,11 +59,21 @@ export const saveMessage=async (req,res) => {
 
 export const getMessages=async (req,res) => {
     try {
-        
-        const messages=await Message.find({
-            conversationId:req.params.conversationId   
-        })
-        return res.status(200).json(messages)
+        const { before, limit = 30 } = req.query
+        const query = { conversationId: req.params.conversationId }
+        if (before) {
+            query._id = { $lt: before }
+        }
+        const messages = await Message.find(query)
+            .sort({ _id: -1 })
+            .limit(Number(limit) + 1)
+            .lean()
+
+        const hasMore = messages.length > Number(limit)
+        if (hasMore) messages.pop()
+        messages.reverse()
+
+        return res.status(200).json({ messages, hasMore })
     } catch (error) {
         return res.status(500).json({message:`get messages error ${error}`})
     }

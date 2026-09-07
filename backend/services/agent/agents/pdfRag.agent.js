@@ -1,4 +1,4 @@
-import fs, { stat } from "fs"
+import fs from "fs/promises"
 import {PDFParse} from "pdf-parse"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { vectorStore } from "../config/vectorDb.js"
@@ -9,7 +9,7 @@ import { checkAgentLimit } from "../config/agentLimit.js"
 export const pdfRag=async (state)=>{
    try {
     await checkAgentLimit(state.userId,"pdf")
-      const buffer=fs.readFileSync(state.file.path)
+      const buffer=await fs.readFile(state.file.path)
       const pdf=new PDFParse({
         data:buffer
       })
@@ -72,7 +72,7 @@ new HumanMessage(`
             aiResponse:error?.data?.message || "failed to analyze pdf"
         }
    }finally{
-         fs.unlinkSync(state.file.path)
+         await fs.unlink(state.file.path).catch(()=>{})
    }
 
 

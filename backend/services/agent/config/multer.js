@@ -1,11 +1,9 @@
-import fs from "fs"
+import { promises as fsPromises } from "fs"
 import path from "path"
 import multer from "multer"
 const uploadDir = path.resolve("./temp")
 
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
-}
+await fsPromises.mkdir(uploadDir, { recursive: true })
 
 const storage = multer.diskStorage({
     destination(req, file, cb) {

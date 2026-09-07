@@ -5,14 +5,17 @@ const messageSlice=createSlice({
     initialState:{
       messages:[],
       artifacts:[],
-      isLoading:false
-      
+      isLoading:false,
+      hasMore:false
     },
     reducers:{
        setMessages:(state,action)=>{
         state.messages=action.payload
        },
-        addMessage:(state,action)=>{
+       prependMessages:(state,action)=>{
+        state.messages=[...action.payload,...state.messages]
+       },
+       addMessage:(state,action)=>{
         state.messages.push(action.payload)
        },
        setArtifacts:(state,action)=>{
@@ -20,13 +23,12 @@ const messageSlice=createSlice({
        },
        setIsLoading:(state,action)=>{
         state.isLoading=action.payload
+       },
+       setHasMore:(state,action)=>{
+        state.hasMore=action.payload
        }
-      
-
     }
-   
 })
 
-export const {setMessages,addMessage,setArtifacts,setIsLoading}=messageSlice.actions 
+export const {setMessages,prependMessages,addMessage,setArtifacts,setIsLoading,setHasMore}=messageSlice.actions
 export default messageSlice.reducer
-

@@ -4,6 +4,28 @@ import User from "../models/user.model.js"
 import redis from "../../../shared/redis/redis.js"
 import crypto from "crypto"
 
+const COST = {
+    chat: 1,
+    search: 5,
+    coding: 10,
+    pdf: 10,
+    ppt: 10,
+    vision: 10
+}
+
+const SESSION_TTL = 7 * 24 * 60 * 60
+
+const buildSessionPayload = (user) => JSON.stringify({
+    userId: user._id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    plan: user.plan,
+    credits: user.credits,
+    totalCredits: user.totalCredits,
+    planExpiresAt: user.planExpiresAt
+})
+
 export const login = async (req, res) => {
     try {
         const { token } = req.body
@@ -22,28 +44,17 @@ export const login = async (req, res) => {
         }
 
         const sessionId = crypto.randomUUID()
-        await redis.set(`user-session-${user?._id}`,
-            sessionId
-            , "EX", 7 * 24 * 60 * 60)
-        await redis.set(`session-${sessionId}`, JSON.stringify({
-            userId: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            plan: user.plan,
-            credits: user.credits,
-            totalCredits: user.totalCredits,
-            planExpiresAt: user.planExpiresAt
-        }), "EX", 7 * 24 * 60 * 60)
 
-
-
+        await redis.pipeline()
+            .set(`user-session-${user._id}`, sessionId, "EX", SESSION_TTL)
+            .set(`session-${sessionId}`, buildSessionPayload(user), "EX", SESSION_TTL)
+            .exec()
 
         res.cookie("session", sessionId, {
             httpOnly: true,
             secure: true,
             sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: SESSION_TTL * 1000
         })
 
         return res.status(200).json(user)
@@ -70,28 +81,22 @@ export const logOut = async (req, res) => {
 export const updateUserPayment = async (req, res) => {
     try {
         const { plan, credits, userId } = req.body
-        const user = await User.findById(userId)
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                $set: { plan, planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+                $inc: { credits, totalCredits: credits }
+            },
+            { new: true }
+        )
         if (!user) {
             return res.status(404).json({ message: "User not found" })
         }
-        user.plan = plan
-        user.credits += credits
-        user.totalCredits += credits
-        user.planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        await user.save()
 
-        const sessionId = await redis.get(`user-session-${user?._id}`)
-        console.log("sessionId", sessionId)
-        await redis.set(`session-${sessionId}`, JSON.stringify({
-            userId: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            plan: user.plan,
-            credits: user.credits,
-            totalCredits: user.totalCredits,
-            planExpiresAt: user.planExpiresAt
-        }), "EX", 7 * 24 * 60 * 60)
+        const sessionId = await redis.get(`user-session-${user._id}`)
+        if (sessionId) {
+            await redis.set(`session-${sessionId}`, buildSessionPayload(user), "EX", SESSION_TTL)
+        }
 
         return res.status(200).json({ success: true })
 
@@ -105,47 +110,26 @@ export const deductCredits = async (req, res) => {
     try {
         const { userId, agent } = req.body
 
-        const COST = {
+        const requiredCredits = COST[agent] || 1
 
-            chat: 1,
-
-            search: 5,
-
-            coding: 10,
-
-            pdf: 10,
-
-            ppt: 10,
-
-            vision: 10
-
-        };
-
-        const user = await User.findById(userId)
+        const user = await User.findOneAndUpdate(
+            { _id: userId, credits: { $gte: requiredCredits } },
+            { $inc: { credits: -requiredCredits } },
+            { new: true }
+        )
 
         if (!user) {
-            return res.status(400).json({ message: "user not found" })
-        }
-
-        const requiredCredits = COST[agent] || 1
-        if (user.credits < requiredCredits) {
+            const exists = await User.exists({ _id: userId })
+            if (!exists) {
+                return res.status(400).json({ message: "user not found" })
+            }
             return res.status(400).json({ message: "Not enough credits." })
         }
-        user.credits -= requiredCredits
-        await user.save()
 
-        const sessionId = await redis.get(`user-session-${user?._id}`)
-        console.log("sessionId", sessionId)
-        await redis.set(`session-${sessionId}`, JSON.stringify({
-            userId: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            plan: user.plan,
-            credits: user.credits,
-            totalCredits: user.totalCredits,
-            planExpiresAt: user.planExpiresAt
-        }), "EX", 7 * 24 * 60 * 60)
+        const sessionId = await redis.get(`user-session-${user._id}`)
+        if (sessionId) {
+            await redis.set(`session-${sessionId}`, buildSessionPayload(user), "EX", SESSION_TTL)
+        }
 
         return res.status(200).json({ success: true, credits: user.credits })
     } catch (error) {
