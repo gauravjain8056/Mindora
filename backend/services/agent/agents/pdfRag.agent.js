@@ -73,10 +73,10 @@ new HumanMessage(`
 
 
    } catch (error) {
-    console.log(error)
+    console.error(error)
          return {
             ...state,
-            aiResponse:error?.data?.message || "failed to analyze pdf"
+            aiResponse:error?.data?.message || error?.message || "failed to analyze pdf"
         }
    }finally{
          await fs.unlink(state.file.path).catch(()=>{})
