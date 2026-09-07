@@ -1,5 +1,5 @@
 import fs from "fs/promises"
-import {PDFParse} from "pdf-parse"
+import pdfParse from "pdf-parse"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { vectorStore } from "../config/vectorDb.js"
 import { getModel } from "../config/llmModels.js"
@@ -10,12 +10,7 @@ export const pdfRag=async (state)=>{
    try {
     await checkAgentLimit(state.userId,"pdf")
       const buffer=await fs.readFile(state.file.path)
-      const pdf=new PDFParse({
-        data:buffer
-      })
-
-      const result=await pdf.getText()
-      const text=result.text
+      const { text } = await pdfParse(buffer)
 
       const spilliter=new RecursiveCharacterTextSplitter({
         chunkSize:1000,

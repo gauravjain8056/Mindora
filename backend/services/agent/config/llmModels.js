@@ -22,13 +22,14 @@ export const getModel=async (agent)=>{
     switch (agent) {
         case "chat":
             return groq;
-        case "search" :    
-           return groq;
-        case "coding": 
-           return openrouter; 
-        case "imageAnalyzer": 
-           return gemini;   
-    
+        case "search":
+            return groq;
+        case "pdf-rag":
+            return groq;
+        case "coding":
+            return openrouter;
+        case "imageAnalyzer":
+            return gemini;
         default:
             return groq;
     }
