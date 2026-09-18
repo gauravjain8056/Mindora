@@ -235,9 +235,8 @@ Do not commit `.env` files or private credentials to GitHub.
 
 ## Screenshots
 
-<img width="1913" height="971" alt="image" src="https://github.com/user-attachments/assets/9ab5296d-1ba3-4a2b-84b2-bc76c80b54b4" />
-<img width="1906" height="972" alt="image" src="https://github.com/user-attachments/assets/7d0ecd37-7abf-4594-ba9f-c14389c36994" />
-<img width="1919" height="972" alt="image" src="https://github.com/user-attachments/assets/ef512076-e5d0-4848-855c-9d07d927d12d" />
+<img width="1917" height="982" alt="image" src="https://github.com/user-attachments/assets/61a26de0-1284-45e5-8288-75ce82ca1d31" />
+<img width="1917" height="982" alt="image" src="https://github.com/user-attachments/assets/cfca8117-a6d9-4d05-9fcc-61367702868b" />
 
 ## What I Learned
 
