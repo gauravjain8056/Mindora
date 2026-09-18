@@ -59,31 +59,52 @@ function MessageList() {
     return (
         <div
             ref={scrollContainerRef}
-            className='flex-1 overflow-y-auto px-6 py-6 space-y-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+            className='flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 bg-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
         >
             {isFetchingOlder && (
                 <div className='flex justify-center py-2'>
-                    <div className='w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin' />
+                    <div className='w-5 h-5 rounded-full border-2 border-[#191A23] border-t-transparent animate-spin' />
                 </div>
             )}
 
-            {messages.length == 0 || !selectedConversation ? (
-                <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
-                    <div className='flex flex-col gap-1.5'>
-                        <h1 className='text-[20px] font-semibold text-slate-200 tracking-tight'>Mindora AI</h1>
-                        <p className='text-[15px] font-semibold text-slate-400 tracking-tight'>How can I help you?</p>
-                        <p className='text-[13px] text-slate-600 max-w-[260px] leading-relaxed'>Ask me anything — code, ideas, explanations, or just a quick question.</p>
-                    </div>
-                    <div className='flex flex-wrap justify-center gap-2 mt-1'>
-                        {["Write a Netflix clone", "Explain Redis", "Build a dashboard"].map((s) => (
-                            <button key={s} className='text-[12px] text-slate-400 bg-white/[0.04] border border-white/[0.07] px-3.5 py-1.5 rounded-lg hover:bg-white/[0.08] hover:text-slate-200 transition-colors duration-150 cursor-pointer'>
-                                {s}
+            {messages.length === 0 || !selectedConversation ? (
+                <div className="h-full min-h-[320px] flex flex-col items-center justify-center text-center max-w-xl mx-auto px-4">
+                    <span className='font-display font-bold text-[11px] px-3 py-1 rounded-md bg-[#B9FF66] text-[#191A23] uppercase tracking-wider mb-4 border border-[#191A23] shadow-[1.5px_1.5px_0px_#191A23]'>
+                        Mindora Workspace
+                    </span>
+                    <h1 className='font-display text-[28px] md:text-[34px] font-bold text-[#191A23] tracking-tight leading-snug'>
+                        What would you like to build today?
+                    </h1>
+                    <p className='text-[14px] text-[#555770] max-w-[420px] leading-relaxed mt-2.5'>
+                        Ask questions, write clean code, analyze documents, or brainstorm ideas with dedicated agents.
+                    </p>
+                    <div className='flex flex-wrap justify-center gap-2.5 mt-6'>
+                        {[
+                            "Build a modern SaaS landing page",
+                            "Explain how Redis caching works",
+                            "Generate a responsive dashboard in React",
+                            "Review and optimize a SQL query"
+                        ].map((prompt) => (
+                            <button
+                                key={prompt}
+                                className='text-[12.5px] font-semibold text-[#191A23] bg-[#F3F3F3] border border-[#191A23] px-3.5 py-2 rounded-xl hover:bg-[#B9FF66] transition-all duration-150 cursor-pointer shadow-[2px_2px_0px_#191A23] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+                                onClick={() => {
+                                    const textarea = document.querySelector('textarea');
+                                    if (textarea) {
+                                        const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+                                        nativeTextareaValueSetter.call(textarea, prompt);
+                                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                                        textarea.focus();
+                                    }
+                                }}
+                            >
+                                {prompt}
                             </button>
                         ))}
                     </div>
                 </div>
             ) : (
-                <div className='space-y-5'>
+                <div className='max-w-4xl mx-auto space-y-6'>
                     {messages?.map((msg, i) => (
                         <div key={msg._id || i}>
                             <MessageBubble role={msg?.role} content={msg?.content} images={msg.images || []} />

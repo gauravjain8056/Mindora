@@ -1,82 +1,47 @@
 import React, { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from "motion/react"
-function LoadingAnimation() {
+import { motion } from "motion/react"
 
-    const Thinking_Lables = ["Thinking", "Analyzing", "Reasoning", "Generating"]
+function LoadingAnimation() {
+    const thinkingLabels = ["Thinking", "Analyzing", "Reasoning", "Writing"]
     const [labelIndex, setLabelIndex] = useState(0)
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setLabelIndex((prev) => (prev + 1) % Thinking_Lables.length)
+            setLabelIndex((prev) => (prev + 1) % thinkingLabels.length)
         }, 1800)
         return () => clearInterval(interval)
     }, [])
 
-    const label = Thinking_Lables[labelIndex]
+    const label = thinkingLabels[labelIndex]
 
     return (
-        <div className='flex items-center gap-3 max-w-[72%] py-1'>
-            <div className='relative w-9 h-9 flex items-center justify-center shrink-0'>
-                {
-                    [0, 0.45, 0.9].map((delay, i) => (
-                        <motion.div
+        <div className='flex items-center gap-3 py-1'>
+            <div className='inline-flex items-center gap-3 bg-[#F3F3F3] border border-[#191A23]/15 rounded-2xl rounded-tl-sm px-4 py-3 shadow-[2px_2px_0px_rgba(25,26,35,0.06)]'>
+                {/* 3 Clean Bouncing Dots */}
+                <div className='flex items-center gap-1.5'>
+                    {[0, 0.2, 0.4].map((delay, i) => (
+                        <motion.span
                             key={i}
-                            className="absolute inset-0 rounded-full border border-cyan-400/30"
-                            initial={{ scale: 0.3, opacity: 0.55 }}
-                            animate={{ scale: 1.7, opacity: 0 }}
-                            transition={{
-                                duration: 1.8,
-                                repeat: Infinity,
-                                delay,
-                                ease: "easeOut",
+                            className={`w-2 h-2 rounded-full ${
+                                i === 1 ? 'bg-[#B9FF66] border border-[#191A23]' : 'bg-[#191A23]'
+                            }`}
+                            animate={{
+                                y: [-2, 2, -2],
                             }}
-
+                            transition={{
+                                duration: 0.8,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                                delay: delay,
+                            }}
                         />
-                    ))
-                }
+                    ))}
+                </div>
 
-                <motion.span
-                    className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-cyan-300 to-violet-400"
-                    style={{ boxShadow: "0 0 14px rgba(125,211,252,0.55)" }}
-                    animate={{ scale: [1, 1.25, 1] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-
-
-                />
+                <div className='text-[13px] font-semibold text-[#191A23] font-display tracking-tight'>
+                    {label}...
+                </div>
             </div>
-            <div className='flex overflow-hidden'>
-                <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={label}
-                        className="flex"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                    >
-                        {
-                            label.split("").map((ch, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="text-[13px] font-medium tracking-wide text-slate-400"
-                                    animate={{ opacity: [0.3, 1, 0.3] }}
-                                    transition={{
-                                        duration: 1.4,
-                                        repeat: Infinity,
-                                        ease: "easeInOut",
-                                        delay: i * 0.07,
-                                    }}
-
-                                >
-                                    {ch}
-                                </motion.div>
-                            ))
-                        }
-
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-
         </div>
     )
 }

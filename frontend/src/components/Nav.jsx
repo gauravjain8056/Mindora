@@ -3,22 +3,25 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 
 function Nav() {
-const {selectedConversation}=useSelector(state=>state.conversation)
-const {messages}=useSelector(state=>state.message)
+  const { selectedConversation } = useSelector(state => state.conversation)
+  const { messages } = useSelector(state => state.message)
+
   return (
-<>
-    {selectedConversation &&   <div className='h-14 flex items-center gap-2.5  px-5 border-b border-white/[0.06] bg-[#0d0f14]'>
-      <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20'>
-        <MessageSquare size={13} className="text-indigo-400"/>
-      </div>
-      <div className='text-[14px] font-semibold text-slate-100 tracking-tight'>
-{selectedConversation?.title || "New Chat"}
-      </div>
-      <div className='text-[10px] font-medium text-slate-600 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-full'>
-        {messages?.length} Messages
-      </div>
-    </div>}
-  </>
+    <>
+      {selectedConversation && (
+        <div className='h-14 flex items-center gap-3 px-5 border-b border-[#191A23]/15 bg-white shrink-0'>
+          <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-[#B9FF66] border border-[#191A23] shadow-[1.5px_1.5px_0px_#191A23]'>
+            <MessageSquare size={13} className="text-[#191A23]" />
+          </div>
+          <div className='text-[14px] font-bold font-display text-[#191A23] tracking-tight truncate'>
+            {selectedConversation?.title || "New Chat"}
+          </div>
+          <div className='text-[11px] font-semibold text-[#191A23] bg-[#F3F3F3] border border-[#191A23]/20 px-2.5 py-0.5 rounded-md'>
+            {messages?.length || 0} {messages?.length === 1 ? 'Message' : 'Messages'}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

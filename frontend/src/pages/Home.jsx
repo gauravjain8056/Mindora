@@ -21,38 +21,43 @@ function Home() {
         }
     }
 
-
     const googleLogin = async () => {
         const data = await signInWithPopup(auth, googleProvider)
         const token = await data.user.getIdToken()
-        console.log(token)
         await handleLogin(token)
-        console.log(data)
     }
-    return (
-        <div className='h-screen  flex bg-[#0d0f14] text-white overflow-hidden'>
 
+    return (
+        <div className='h-screen flex bg-white text-[#191A23] overflow-hidden'>
             <SideBar />
             <ChatArea />
             <Artifact />
 
+            {!userData && (
+                <div className='fixed inset-0 z-50 flex items-center justify-center bg-[#191A23]/50'>
+                    <div className='w-[380px] max-w-[92vw] bg-white border-2 border-[#191A23] rounded-2xl p-7 flex flex-col gap-6 shadow-[5px_5px_0px_#191A23]'>
+                        <div className='flex flex-col gap-1'>
+                            <span className='inline-block self-start font-display font-bold text-[11px] px-2.5 py-0.5 rounded-md bg-[#B9FF66] text-[#191A23] tracking-wide'>
+                                MINDORA
+                            </span>
+                            <h2 className='font-display text-[22px] font-bold text-[#191A23] tracking-tight mt-2'>
+                                Welcome back
+                            </h2>
+                            <p className='text-[13px] text-[#555770] leading-relaxed'>
+                                Connect your account to access your conversations and assistants.
+                            </p>
+                        </div>
 
-
-
-            {!userData && <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur'>
-                <div className='w-[340px] bg-[#13151c] border border-white/[0.08] rounded-2xl p-7 flex flex-col gap-5'>
-                    <div className='flex flex-col gap-1'>
-                        <h2 className='text-[17px] font-semibold text-slate-100 tracking-tight'>Welcome to Mindora AI</h2>
-                        <p className='text-[13px] text-slate-500'>Please login to continue using the app.</p>
+                        <button
+                            className='w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-semibold text-[#191A23] bg-[#F3F3F3] border-2 border-[#191A23] hover:bg-[#B9FF66] transition-all duration-150 cursor-pointer shadow-[3px_3px_0px_#191A23] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#191A23]'
+                            onClick={googleLogin}
+                        >
+                            <FcGoogle size={18} />
+                            Continue with Google
+                        </button>
                     </div>
-
-                    <button className='w-full flex items-center justify-center gap-3 py-[11px] rounded-xl text-sm font-medium text-black/90 bg-white hover:bg-gray-200  transition-all duration-150 cursor-pointer' onClick={googleLogin}>
-                        <FcGoogle size={15} />
-                        Continue With Google
-                    </button>
                 </div>
-            </div>}
-
+            )}
         </div>
     )
 }

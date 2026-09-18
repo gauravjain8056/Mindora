@@ -2,7 +2,7 @@ import { Check, Copy, ExternalLink, X } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 function MessageBubble({ role, content, images }) {
@@ -20,48 +20,51 @@ function MessageBubble({ role, content, images }) {
 
   const markdownComponents = useMemo(() => ({
     h1: ({ children }) => (
-      <h1 className='text-2xl font-bold mt-5 mb-3'>{children}</h1>
+      <h1 className='font-display text-2xl font-bold mt-5 mb-3 tracking-tight'>{children}</h1>
     ),
     h2: ({ children }) => (
-      <h2 className='text-xl font-semibold mt-4 mb-2'>{children}</h2>
+      <h2 className='font-display text-xl font-bold mt-4 mb-2 tracking-tight'>{children}</h2>
     ),
     h3: ({ children }) => (
-      <h3 className='text-lg font-semibold mt-3 mb-2'>{children}</h3>
+      <h3 className='font-display text-lg font-bold mt-3 mb-2 tracking-tight'>{children}</h3>
     ),
     p: ({ children }) => (
-      <p className='mb-3 whitespace-pre-wrap break-words'>{children}</p>
+      <p className='mb-3 leading-relaxed whitespace-pre-wrap break-words'>{children}</p>
     ),
     ul: ({ children }) => (
-      <ul className='list-disc pl-5 space-y-1 my-2'>{children}</ul>
+      <ul className='list-disc pl-5 space-y-1.5 my-2.5'>{children}</ul>
     ),
     ol: ({ children }) => (
-      <ol className='list-decimal pl-5 space-y-1 my-2'>{children}</ol>
+      <ol className='list-decimal pl-5 space-y-1.5 my-2.5'>{children}</ol>
     ),
     table: ({ children }) => (
-      <div className='overflow-x-auto my-4'>
-        <table className='min-w-full border border-white/10'>
+      <div className='overflow-x-auto my-4 rounded-xl border-2 border-[#191A23] shadow-[2px_2px_0px_#191A23]'>
+        <table className='min-w-full text-sm divide-y divide-[#191A23]/20'>
           {children}
         </table>
       </div>
     ),
     th: ({ children }) => (
-      <th className='border border-white/10 bg-white/5 px-3 py-2 text-left'>
+      <th className='bg-[#191A23] text-white px-3.5 py-2.5 text-left font-display font-bold text-xs uppercase tracking-wider'>
         {children}
       </th>
     ),
     td: ({ children }) => (
-      <td className='border border-white/10 px-3 py-2'>
+      <td className='border-t border-[#191A23]/10 px-3.5 py-2 text-sm bg-white'>
         {children}
       </td>
     ),
     a: ({ href, children }) => (
-      <a href={href}
+      <a
+        href={href}
         target="_blank"
         rel="noreferrer"
-        className="text-indigo-400 underline inline-flex items-center gap-1"
+        className={`font-semibold underline decoration-[#B9FF66] decoration-2 underline-offset-2 inline-flex items-center gap-1 ${
+          isUser ? "text-white" : "text-[#191A23] hover:text-black"
+        }`}
       >
         {children}
-        <ExternalLink size={14} />
+        <ExternalLink size={13} />
       </a>
     ),
     code: ({ className, children }) => {
@@ -69,7 +72,13 @@ function MessageBubble({ role, content, images }) {
 
       if (!className) {
         return (
-          <code className='px-1.5 py-0.5 rounded bg-white/10 text-indigo-200'>
+          <code
+            className={`px-1.5 py-0.5 rounded font-mono text-[12.5px] border ${
+              isUser
+                ? "bg-white/15 border-white/20 text-white"
+                : "bg-white border-[#191A23]/20 text-[#191A23]"
+            }`}
+          >
             {value}
           </code>
         )
@@ -78,21 +87,26 @@ function MessageBubble({ role, content, images }) {
       const language = className.replace("language-", "")
 
       return (
-        <div className='my-4 overflow-hidden rounded-xl border border-white/10 bg-[#111318]'>
-          <div className='flex items-center justify-between bg-[#1b1d24] border-b border-white/10 px-4 py-2'>
-            <span className='uppercase text-xs text-slate-400'>
+        <div className='my-4 overflow-hidden rounded-xl border-2 border-[#191A23] bg-[#191A23] shadow-[3px_3px_0px_#191A23]'>
+          <div className='flex items-center justify-between bg-[#191A23] border-b border-[#292A32] px-4 py-2.5'>
+            <span className='font-display uppercase text-[11px] font-bold tracking-wider text-[#B9FF66]'>
               {language}
             </span>
-            <button className='flex items-center gap-1 text-xs'
-              onClick={() => copyCode(value)}>
-              {
-                copiedCode == value ?
-                  <>
-                    <Check size={14} />
-                    Copied
-                  </> :
-                  <><Copy size={14} />Copy</>
-              }
+            <button
+              className='flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-[#B9FF66] transition-colors cursor-pointer bg-transparent border-none'
+              onClick={() => copyCode(value)}
+            >
+              {copiedCode === value ? (
+                <>
+                  <Check size={14} className="text-[#B9FF66]" />
+                  <span className='text-[#B9FF66] font-semibold'>Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy size={14} />
+                  <span>Copy</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -104,8 +118,9 @@ function MessageBubble({ role, content, images }) {
             customStyle={{
               margin: 0,
               padding: "16px",
-              background: "#0d1117",
+              background: "#121319",
               fontSize: "13px",
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             }}
           >
             {value}
@@ -114,32 +129,30 @@ function MessageBubble({ role, content, images }) {
       )
     },
     img: ({ src }) => {
-      if (!src) return null;
+      if (!src) return null
       return (
         <img
           src={src}
           onClick={() => setLightBox(src)}
           loading="lazy"
           onError={(e) => e.currentTarget.remove()}
-          className="w-40 h-28 rounded-xl object-cover border border-white/10 cursor-zoom-in hover:opacity-90 transition"
+          className="w-44 h-32 rounded-xl object-cover border-2 border-[#191A23] shadow-[2px_2px_0px_#191A23] cursor-zoom-in hover:opacity-90 transition-opacity"
         />
       )
     }
-  }), [copiedCode])
+  }), [copiedCode, isUser])
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`w-fit max-w-[92vw] md:max-w-[72%]
-  px-4 py-2.5 rounded-2xl
-  break-words overflow-hidden
-  leading-relaxed
-        ${isUser
-          ? "bg-gradient-to-br from-indigo-500 to-violet-700 text-white rounded-tr-sm"
-          : " text-slate-200 rounded-tl-sm"
-        }`}>
-
+      <div
+        className={`w-fit max-w-[92vw] md:max-w-[75%] px-5 py-3.5 rounded-2xl break-words overflow-hidden leading-relaxed text-[14.5px] ${
+          isUser
+            ? "bg-[#191A23] text-white rounded-tr-sm border-2 border-[#191A23] shadow-[3px_3px_0px_rgba(25,26,35,0.15)]"
+            : "bg-[#F3F3F3] text-[#191A23] rounded-tl-sm border border-[#191A23]/15 shadow-[2px_2px_0px_rgba(25,26,35,0.06)]"
+        }`}
+      >
         {images.length > 0 && (
-          <div className='flex flex-wrap gap-3 mt-4'>
+          <div className='flex flex-wrap gap-3 mb-3'>
             {images.map((img, i) => (
               <img
                 key={img || i}
@@ -147,7 +160,7 @@ function MessageBubble({ role, content, images }) {
                 onClick={() => setLightBox(img)}
                 loading="lazy"
                 onError={(e) => e.currentTarget.remove()}
-                className="w-40 h-28 rounded-xl object-cover border border-white/10 cursor-zoom-in hover:opacity-90 transition"
+                className="w-44 h-32 rounded-xl object-cover border-2 border-[#191A23] shadow-[2px_2px_0px_#191A23] cursor-zoom-in hover:opacity-90 transition-opacity"
               />
             ))}
           </div>
@@ -159,21 +172,22 @@ function MessageBubble({ role, content, images }) {
         >
           {content}
         </Markdown>
-
       </div>
-      {lightBox &&
-        <div className='fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6'>
+
+      {lightBox && (
+        <div className='fixed inset-0 z-50 bg-[#191A23]/70 flex items-center justify-center p-6'>
           <button
-            className='absolute top-5 right-5 text-white/80 hover:text-white bg-white/10 rounded-full p-2'
+            className='absolute top-5 right-5 text-white bg-[#191A23] border-2 border-white rounded-full p-2 cursor-pointer hover:bg-[#B9FF66] hover:text-[#191A23] hover:border-[#191A23] transition-colors'
             onClick={() => setLightBox(null)}
           >
-            <X />
+            <X size={20} />
           </button>
           <img
             src={lightBox}
-            className="max-w-[90vw] max-h-[85vh] rounded-2xl border border-white/10 shadow-2xl object-contain"
+            className="max-w-[90vw] max-h-[85vh] rounded-2xl border-4 border-[#191A23] shadow-[8px_8px_0px_#191A23] object-contain bg-white"
           />
-        </div>}
+        </div>
+      )}
     </div>
   )
 }
